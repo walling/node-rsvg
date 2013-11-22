@@ -41,17 +41,6 @@ function Rsvg(buffer) {
 		}
 	});
 
-	Object.defineProperty(self, 'dpi', {
-		configurable: true,
-		enumerable: true,
-		get: function() {
-			return self.handle.getDPI();
-		},
-		set: function(dpi) {
-			self.handle.setDPI(dpi);
-		}
-	});
-
 	Object.defineProperty(self, 'dpiX', {
 		configurable: true,
 		enumerable: true,
@@ -109,7 +98,6 @@ function Rsvg(buffer) {
 util.inherits(Rsvg, Writable);
 
 Rsvg.prototype.baseURI = null;
-Rsvg.prototype.dpi = 90;
 Rsvg.prototype.dpiX = 90;
 Rsvg.prototype.dpiY = 90;
 Rsvg.prototype.em = 0;
@@ -126,6 +114,17 @@ Rsvg.prototype._write = function(data, encoding, callback) {
 	}
 
 	callback();
+};
+
+Rsvg.prototype.getDPI = function() {
+	return this.handle.getDPI();
+};
+
+Rsvg.prototype.setDPI = function(x, y) {
+	if (y === undefined) {
+		y = x;
+	}
+	this.handle.setDPI(x, y);
 };
 
 Rsvg.prototype.dimensions = function() {
@@ -168,14 +167,8 @@ Rsvg.prototype.toString = function() {
 		obj.baseURI = baseURI;
 	}
 
-	var dpiX = this.dpiX;
-	var dpiY = this.dpiY;
-	if (dpiX === dpiY) {
-		obj.dpi = dpiX;
-	} else {
-		obj.dpiX = dpiX;
-		obj.dpiY = dpiY;
-	}
+	var dpi = this.getDPI();
+	obj.dpi = (dpi.x === dpi.y) ? dpi.x : dpi;
 
 	obj.width = this.width;
 	obj.height = this.height;

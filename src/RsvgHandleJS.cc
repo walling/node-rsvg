@@ -141,17 +141,33 @@ Handle<Value> RsvgHandleJS::GetDPI(const Arguments& args) {
 		"dpi-y", &dpiY,
 		NULL
 	);
-	return scope.Close(Number::New(MIN(dpiX, dpiY)));
+
+	Handle<ObjectTemplate> dpi = ObjectTemplate::New();
+	dpi->SetInternalFieldCount(2);
+	dpi->Set(String::New("x"), Number::New(dpiX));
+	dpi->Set(String::New("y"), Number::New(dpiY));
+
+	return scope.Close(dpi->NewInstance());
 }
 
 Handle<Value> RsvgHandleJS::SetDPI(const Arguments& args) {
 	HandleScope scope;
 	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
-	gdouble value = args[0]->NumberValue();
-	if (std::isnan(value)) {
-		value = 0;
+
+	gdouble x = args[0]->NumberValue();
+	if (std::isnan(x)) {
+		x = 0;
 	}
-	rsvg_handle_set_dpi(obj->_handle, value);
+
+	gdouble y = x;
+	if (args[1]->IsNumber()) {
+		y = args[1]->NumberValue();
+		if (std::isnan(y)) {
+			y = 0;
+		}
+	}
+
+	rsvg_handle_set_dpi_x_y(obj->_handle, x, y);
 	return scope.Close(Undefined());
 }
 
