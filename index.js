@@ -63,22 +63,6 @@ function Rsvg(buffer) {
 		}
 	});
 
-	Object.defineProperty(self, 'em', {
-		configurable: true,
-		enumerable: true,
-		get: function() {
-			return self.handle.getEM();
-		}
-	});
-
-	Object.defineProperty(self, 'ex', {
-		configurable: true,
-		enumerable: true,
-		get: function() {
-			return self.handle.getEX();
-		}
-	});
-
 	Object.defineProperty(self, 'width', {
 		configurable: true,
 		enumerable: true,
@@ -100,8 +84,6 @@ util.inherits(Rsvg, Writable);
 Rsvg.prototype.baseURI = null;
 Rsvg.prototype.dpiX = 90;
 Rsvg.prototype.dpiY = 90;
-Rsvg.prototype.em = 0;
-Rsvg.prototype.ex = 0;
 Rsvg.prototype.width = 0;
 Rsvg.prototype.height = 0;
 

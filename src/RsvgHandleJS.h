@@ -21,8 +21,6 @@ private:
 	static v8::Handle<v8::Value> SetDPIX(const v8::Arguments& args);
 	static v8::Handle<v8::Value> GetDPIY(const v8::Arguments& args);
 	static v8::Handle<v8::Value> SetDPIY(const v8::Arguments& args);
-	static v8::Handle<v8::Value> GetEM(const v8::Arguments& args);
-	static v8::Handle<v8::Value> GetEX(const v8::Arguments& args);
 	static v8::Handle<v8::Value> GetWidth(const v8::Arguments& args);
 	static v8::Handle<v8::Value> GetHeight(const v8::Arguments& args);
 	static v8::Handle<v8::Value> Write(const v8::Arguments& args);

@@ -37,10 +37,6 @@ void RsvgHandleJS::Init(Handle<Object> exports) {
 			FunctionTemplate::New(GetDPIY)->GetFunction());
 	prototype->Set(String::NewSymbol("setDPIY"),
 			FunctionTemplate::New(SetDPIY)->GetFunction());
-	prototype->Set(String::NewSymbol("getEM"),
-			FunctionTemplate::New(GetEM)->GetFunction());
-	prototype->Set(String::NewSymbol("getEX"),
-			FunctionTemplate::New(GetEX)->GetFunction());
 	prototype->Set(String::NewSymbol("getWidth"),
 			FunctionTemplate::New(GetWidth)->GetFunction());
 	prototype->Set(String::NewSymbol("getHeight"),
@@ -187,14 +183,6 @@ Handle<Value> RsvgHandleJS::SetDPIY(const Arguments& args) {
 	return SetNumberProperty(args, "dpi-y");
 }
 
-Handle<Value> RsvgHandleJS::GetEM(const Arguments& args) {
-	return GetNumberProperty(args, "em");
-}
-
-Handle<Value> RsvgHandleJS::GetEX(const Arguments& args) {
-	return GetNumberProperty(args, "ex");
-}
-
 Handle<Value> RsvgHandleJS::GetWidth(const Arguments& args) {
 	return GetIntegerProperty(args, "width");
 }
@@ -244,12 +232,42 @@ Handle<Value> RsvgHandleJS::Close(const Arguments& args) {
 
 Handle<Value> RsvgHandleJS::Dimensions(const Arguments& args) {
 	HandleScope scope;
-	return scope.Close(Undefined());
+	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+
+	RsvgDimensionData _dimensions = { 0, 0, 0, 0 };
+	rsvg_handle_get_dimensions(obj->_handle, &_dimensions);
+
+	Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
+	dimensions->SetInternalFieldCount(2);
+	dimensions->Set(String::New("width"), Integer::New(_dimensions.width));
+	dimensions->Set(String::New("height"), Integer::New(_dimensions.height));
+	return scope.Close(dimensions->NewInstance());
 }
 
 Handle<Value> RsvgHandleJS::DimensionsOfElement(const Arguments& args) {
 	HandleScope scope;
-	return scope.Close(Undefined());
+	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	const char* id = NULL;
+
+	if (!(args[0]->IsUndefined() || args[0]->IsNull())) {
+		String::Utf8Value arg0(args[0]);
+		id = *arg0;
+		if (!id) {
+			ThrowException(Exception::TypeError(String::New("Invalid argument: id")));
+			return scope.Close(Undefined());
+		}
+	}
+
+	RsvgDimensionData _dimensions = { 0, 0, 0, 0 };
+	if (rsvg_handle_get_dimensions_sub(obj->_handle, &_dimensions, id)) {
+		Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
+		dimensions->SetInternalFieldCount(2);
+		dimensions->Set(String::New("width"), Integer::New(_dimensions.width));
+		dimensions->Set(String::New("height"), Integer::New(_dimensions.height));
+		return scope.Close(dimensions->NewInstance());
+	} else {
+		return scope.Close(Null());
+	}
 }
 
 Handle<Value> RsvgHandleJS::PositionOfElement(const Arguments& args) {
