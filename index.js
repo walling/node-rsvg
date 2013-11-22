@@ -114,11 +114,7 @@ Rsvg.prototype.dimensions = function() {
 };
 
 Rsvg.prototype.dimensionsOfElement = function(id) {
-	return this.handle.dimensionsOfElement(id);
-};
-
-Rsvg.prototype.positionOfElement = function(id) {
-	return this.handle.positionOfElement(id);
+	return this.handle.dimensions(id);
 };
 
 Rsvg.prototype.hasElement = function(id) {

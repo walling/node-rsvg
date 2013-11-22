@@ -26,8 +26,6 @@ private:
 	static v8::Handle<v8::Value> Write(const v8::Arguments& args);
 	static v8::Handle<v8::Value> Close(const v8::Arguments& args);
 	static v8::Handle<v8::Value> Dimensions(const v8::Arguments& args);
-	static v8::Handle<v8::Value> DimensionsOfElement(const v8::Arguments& args);
-	static v8::Handle<v8::Value> PositionOfElement(const v8::Arguments& args);
 	static v8::Handle<v8::Value> HasElement(const v8::Arguments& args);
 	static v8::Handle<v8::Value> RenderRaw(const v8::Arguments& args);
 	static v8::Handle<v8::Value> RenderPNG(const v8::Arguments& args);

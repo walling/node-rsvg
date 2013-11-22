@@ -47,10 +47,6 @@ void RsvgHandleJS::Init(Handle<Object> exports) {
 			FunctionTemplate::New(Close)->GetFunction());
 	prototype->Set(String::NewSymbol("dimensions"),
 			FunctionTemplate::New(Dimensions)->GetFunction());
-	prototype->Set(String::NewSymbol("dimensionsOfElement"),
-			FunctionTemplate::New(DimensionsOfElement)->GetFunction());
-	prototype->Set(String::NewSymbol("positionOfElement"),
-			FunctionTemplate::New(PositionOfElement)->GetFunction());
 	prototype->Set(String::NewSymbol("hasElement"),
 			FunctionTemplate::New(HasElement)->GetFunction());
 	prototype->Set(String::NewSymbol("renderRaw"),
@@ -233,20 +229,6 @@ Handle<Value> RsvgHandleJS::Close(const Arguments& args) {
 Handle<Value> RsvgHandleJS::Dimensions(const Arguments& args) {
 	HandleScope scope;
 	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
-
-	RsvgDimensionData _dimensions = { 0, 0, 0, 0 };
-	rsvg_handle_get_dimensions(obj->_handle, &_dimensions);
-
-	Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
-	dimensions->SetInternalFieldCount(2);
-	dimensions->Set(String::New("width"), Integer::New(_dimensions.width));
-	dimensions->Set(String::New("height"), Integer::New(_dimensions.height));
-	return scope.Close(dimensions->NewInstance());
-}
-
-Handle<Value> RsvgHandleJS::DimensionsOfElement(const Arguments& args) {
-	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
 	const char* id = NULL;
 
 	if (!(args[0]->IsUndefined() || args[0]->IsNull())) {
@@ -258,21 +240,28 @@ Handle<Value> RsvgHandleJS::DimensionsOfElement(const Arguments& args) {
 		}
 	}
 
+	RsvgPositionData _position = { 0, 0 };
 	RsvgDimensionData _dimensions = { 0, 0, 0, 0 };
-	if (rsvg_handle_get_dimensions_sub(obj->_handle, &_dimensions, id)) {
+
+	gboolean hasPosition = rsvg_handle_get_position_sub(obj->_handle, &_position, id);
+	gboolean hasDimensions = rsvg_handle_get_dimensions_sub(obj->_handle, &_dimensions, id);
+
+	if (hasPosition || hasDimensions) {
+		int fields = (hasPosition ? 2 : 0) + (hasDimensions ? 2 : 0);
 		Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
-		dimensions->SetInternalFieldCount(2);
-		dimensions->Set(String::New("width"), Integer::New(_dimensions.width));
-		dimensions->Set(String::New("height"), Integer::New(_dimensions.height));
+		dimensions->SetInternalFieldCount(fields);
+		if (hasPosition) {
+			dimensions->Set(String::New("x"), Integer::New(_position.x));
+			dimensions->Set(String::New("y"), Integer::New(_position.y));
+		}
+		if (hasDimensions) {
+			dimensions->Set(String::New("width"), Integer::New(_dimensions.width));
+			dimensions->Set(String::New("height"), Integer::New(_dimensions.height));
+		}
 		return scope.Close(dimensions->NewInstance());
 	} else {
 		return scope.Close(Null());
 	}
-}
-
-Handle<Value> RsvgHandleJS::PositionOfElement(const Arguments& args) {
-	HandleScope scope;
-	return scope.Close(Undefined());
 }
 
 Handle<Value> RsvgHandleJS::HasElement(const Arguments& args) {
