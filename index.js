@@ -2,12 +2,13 @@
 
 'use strict';
 
-var RsvgHandle = require('./build/Release/rsvg').RsvgHandle;
+var binding = require('./build/Release/rsvg');
 var Writable = require('stream').Writable;
 var util = require('util');
 
 function Rsvg(buffer) {
 	var self = this;
+
 	var options;
 	if (Buffer.isBuffer(buffer)) {
 		options = {};
@@ -19,9 +20,11 @@ function Rsvg(buffer) {
 	} else {
 		throw new TypeError('Invalid argument: buffer');
 	}
+
 	Writable.call(self, options);
 
-	self.handle = new RsvgHandle(buffer);
+	self.handle = new binding.RsvgHandle(buffer);
+
 	self.on('finish', function() {
 		try {
 			self.handle.close();
@@ -103,17 +106,10 @@ Rsvg.prototype.getDPI = function() {
 };
 
 Rsvg.prototype.setDPI = function(x, y) {
-	if (y === undefined) {
-		y = x;
-	}
 	this.handle.setDPI(x, y);
 };
 
-Rsvg.prototype.dimensions = function() {
-	return this.handle.dimensions();
-};
-
-Rsvg.prototype.dimensionsOfElement = function(id) {
+Rsvg.prototype.dimensions = function(id) {
 	return this.handle.dimensions(id);
 };
 
@@ -121,20 +117,24 @@ Rsvg.prototype.hasElement = function(id) {
 	return this.handle.hasElement(id);
 };
 
-Rsvg.prototype.renderRaw = function(format, width, height) {
-	return this.handle.renderRaw(format, width, height);
+Rsvg.prototype.render = function(width, height, format, id) {
+	return this.handle.render(width, height, format, id);
 };
 
-Rsvg.prototype.renderPNG = function(width, height) {
-	return this.handle.renderPNG(width, height);
+Rsvg.prototype.renderPNG = function(width, height, id) {
+	return this.render(width, height, 'PNG', id);
 };
 
-Rsvg.prototype.renderPDF = function(width, height) {
-	return this.handle.renderPDF(width, height);
+Rsvg.prototype.renderPDF = function(width, height, id) {
+	return this.render(width, height, 'PDF', id);
 };
 
-Rsvg.prototype.renderSVG = function(width, height) {
-	return this.handle.renderSVG(width, height);
+Rsvg.prototype.renderSVG = function(width, height, id) {
+	return this.render(width, height, 'SVG', id);
+};
+
+Rsvg.prototype.renderVIPS = function(width, height, id) {
+	return this.render(width, height, 'VIPS', id);
 };
 
 Rsvg.prototype.toString = function() {
@@ -151,7 +151,7 @@ Rsvg.prototype.toString = function() {
 	obj.width = this.width;
 	obj.height = this.height;
 
-	return '{ [Rsvg]' + util.inspect(obj).slice(1);
+	return '{ [' + this.constructor.name + ']' + util.inspect(obj).slice(1);
 };
 
 exports.Rsvg = Rsvg;
