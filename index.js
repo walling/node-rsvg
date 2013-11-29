@@ -23,7 +23,7 @@ function Rsvg(buffer) {
 
 	Writable.call(self, options);
 
-	self.handle = new binding.RsvgHandle(buffer);
+	self.handle = new binding.Rsvg(buffer);
 
 	self.on('finish', function() {
 		try {

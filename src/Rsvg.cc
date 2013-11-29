@@ -122,7 +122,7 @@ void Rsvg::Init(Handle<Object> exports) {
 	prototype->Set("render", FunctionTemplate::New(Render)->GetFunction());
 	// Export class.
 	constructor = Persistent<Function>::New(tpl->GetFunction());
-	exports->Set(String::New("RsvgHandle"), constructor);
+	exports->Set(String::New("Rsvg"), constructor);
 }
 
 Handle<Value> Rsvg::New(const Arguments& args) {
