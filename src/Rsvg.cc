@@ -1,5 +1,5 @@
 
-#include "RsvgHandleJS.h"
+#include "Rsvg.h"
 #include <node_buffer.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
@@ -90,15 +90,15 @@ cairo_status_t GetDataChunks(void* closure, const unsigned char* chunk, unsigned
 	return CAIRO_STATUS_SUCCESS;
 }
 
-Persistent<Function> RsvgHandleJS::constructor;
+Persistent<Function> Rsvg::constructor;
 
-RsvgHandleJS::RsvgHandleJS(RsvgHandle* const handle) : _handle(handle) {}
+Rsvg::Rsvg(RsvgHandle* const handle) : _handle(handle) {}
 
-RsvgHandleJS::~RsvgHandleJS() {
+Rsvg::~Rsvg() {
 	g_object_unref(G_OBJECT(_handle));
 }
 
-void RsvgHandleJS::Init(Handle<Object> exports) {
+void Rsvg::Init(Handle<Object> exports) {
 	// Prepare constructor template.
 	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
 	tpl->SetClassName(String::NewSymbol("RsvgHandle"));
@@ -125,11 +125,11 @@ void RsvgHandleJS::Init(Handle<Object> exports) {
 	exports->Set(String::New("RsvgHandle"), constructor);
 }
 
-Handle<Value> RsvgHandleJS::New(const Arguments& args) {
+Handle<Value> Rsvg::New(const Arguments& args) {
 	HandleScope scope;
 
 	if (args.IsConstructCall()) {
-		// Invoked as constructor: `new RsvgHandleJS(...)`
+		// Invoked as constructor: `new Rsvg(...)`
 		RsvgHandle* handle;
 		if (node::Buffer::HasInstance(args[0])) {
 			const guint8* buffer =
@@ -155,28 +155,28 @@ Handle<Value> RsvgHandleJS::New(const Arguments& args) {
 			return scope.Close(Undefined());
 		}
 		// Create object.
-		RsvgHandleJS* obj = new RsvgHandleJS(handle);
+		Rsvg* obj = new Rsvg(handle);
 		obj->Wrap(args.This());
 		return scope.Close(args.This());
 	} else {
-		// Invoked as plain function `RsvgHandleJS(...)`, turn into construct call.
+		// Invoked as plain function `Rsvg(...)`, turn into construct call.
 		const int argc = 1;
 		Local<Value> argv[argc] = { args[0] };
 		return scope.Close(constructor->NewInstance(argc, argv));
 	}
 }
 
-Handle<Value> RsvgHandleJS::GetBaseURI(const Arguments& args) {
+Handle<Value> Rsvg::GetBaseURI(const Arguments& args) {
 	return GetStringProperty(args, "base-uri");
 }
 
-Handle<Value> RsvgHandleJS::SetBaseURI(const Arguments& args) {
+Handle<Value> Rsvg::SetBaseURI(const Arguments& args) {
 	return SetStringProperty(args, "base-uri");
 }
 
-Handle<Value> RsvgHandleJS::GetDPI(const Arguments& args) {
+Handle<Value> Rsvg::GetDPI(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble dpiX = 0;
 	gdouble dpiY = 0;
 	g_object_get(
@@ -193,9 +193,9 @@ Handle<Value> RsvgHandleJS::GetDPI(const Arguments& args) {
 	return scope.Close(dpi->NewInstance());
 }
 
-Handle<Value> RsvgHandleJS::SetDPI(const Arguments& args) {
+Handle<Value> Rsvg::SetDPI(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	gdouble x = args[0]->NumberValue();
 	if (std::isnan(x)) {
@@ -214,33 +214,33 @@ Handle<Value> RsvgHandleJS::SetDPI(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> RsvgHandleJS::GetDPIX(const Arguments& args) {
+Handle<Value> Rsvg::GetDPIX(const Arguments& args) {
 	return GetNumberProperty(args, "dpi-x");
 }
 
-Handle<Value> RsvgHandleJS::SetDPIX(const Arguments& args) {
+Handle<Value> Rsvg::SetDPIX(const Arguments& args) {
 	return SetNumberProperty(args, "dpi-x");
 }
 
-Handle<Value> RsvgHandleJS::GetDPIY(const Arguments& args) {
+Handle<Value> Rsvg::GetDPIY(const Arguments& args) {
 	return GetNumberProperty(args, "dpi-y");
 }
 
-Handle<Value> RsvgHandleJS::SetDPIY(const Arguments& args) {
+Handle<Value> Rsvg::SetDPIY(const Arguments& args) {
 	return SetNumberProperty(args, "dpi-y");
 }
 
-Handle<Value> RsvgHandleJS::GetWidth(const Arguments& args) {
+Handle<Value> Rsvg::GetWidth(const Arguments& args) {
 	return GetIntegerProperty(args, "width");
 }
 
-Handle<Value> RsvgHandleJS::GetHeight(const Arguments& args) {
+Handle<Value> Rsvg::GetHeight(const Arguments& args) {
 	return GetIntegerProperty(args, "height");
 }
 
-Handle<Value> RsvgHandleJS::Write(const Arguments& args) {
+Handle<Value> Rsvg::Write(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	if (node::Buffer::HasInstance(args[0])) {
 		const guchar* buffer =
 			reinterpret_cast<guchar*>(node::Buffer::Data(args[0]));
@@ -261,9 +261,9 @@ Handle<Value> RsvgHandleJS::Write(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> RsvgHandleJS::Close(const Arguments& args) {
+Handle<Value> Rsvg::Close(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	GError* error = NULL;
 	gboolean success = rsvg_handle_close(obj->_handle, &error);
@@ -277,9 +277,9 @@ Handle<Value> RsvgHandleJS::Close(const Arguments& args) {
 	return scope.Close(Undefined());
 }
 
-Handle<Value> RsvgHandleJS::Dimensions(const Arguments& args) {
+Handle<Value> Rsvg::Dimensions(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	const char* id = NULL;
 	String::Utf8Value idArg(args[0]);
@@ -313,9 +313,9 @@ Handle<Value> RsvgHandleJS::Dimensions(const Arguments& args) {
 	}
 }
 
-Handle<Value> RsvgHandleJS::HasElement(const Arguments& args) {
+Handle<Value> Rsvg::HasElement(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	const char* id = NULL;
 	String::Utf8Value idArg(args[0]);
@@ -331,9 +331,9 @@ Handle<Value> RsvgHandleJS::HasElement(const Arguments& args) {
 	return scope.Close(Boolean::New(exists));
 }
 
-Handle<Value> RsvgHandleJS::Render(const Arguments& args) {
+Handle<Value> Rsvg::Render(const Arguments& args) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	int width = args[0]->Int32Value();
 	int height = args[1]->Int32Value();
@@ -511,9 +511,9 @@ Handle<Value> RsvgHandleJS::Render(const Arguments& args) {
 	return scope.Close(image->NewInstance());
 }
 
-Handle<Value> RsvgHandleJS::GetStringProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::GetStringProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gchar* value = NULL;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	Handle<Value> result(value ? String::New(value) : Null());
@@ -523,9 +523,9 @@ Handle<Value> RsvgHandleJS::GetStringProperty(const Arguments& args, const char*
 	return scope.Close(result);
 }
 
-Handle<Value> RsvgHandleJS::SetStringProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::SetStringProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gchar* value = NULL;
 	String::Utf8Value arg0(args[0]);
 	if (!(args[0]->IsNull() || args[0]->IsUndefined())) {
@@ -535,17 +535,17 @@ Handle<Value> RsvgHandleJS::SetStringProperty(const Arguments& args, const char*
 	return scope.Close(Undefined());
 }
 
-Handle<Value> RsvgHandleJS::GetNumberProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::GetNumberProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble value = 0;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	return scope.Close(Number::New(value));
 }
 
-Handle<Value> RsvgHandleJS::SetNumberProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::SetNumberProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble value = args[0]->NumberValue();
 	if (std::isnan(value)) {
 		value = 0;
@@ -554,18 +554,20 @@ Handle<Value> RsvgHandleJS::SetNumberProperty(const Arguments& args, const char*
 	return scope.Close(Undefined());
 }
 
-Handle<Value> RsvgHandleJS::GetIntegerProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::GetIntegerProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gint value = 0;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	return scope.Close(Integer::New(value));
 }
 
-Handle<Value> RsvgHandleJS::SetIntegerProperty(const Arguments& args, const char* property) {
+Handle<Value> Rsvg::SetIntegerProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	RsvgHandleJS* obj = node::ObjectWrap::Unwrap<RsvgHandleJS>(args.This());
+	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
 	gint value = args[0]->Int32Value();
 	g_object_set(G_OBJECT(obj->_handle), property, value, NULL);
 	return scope.Close(Undefined());
 }
+
+NODE_MODULE(rsvg, Rsvg::Init)

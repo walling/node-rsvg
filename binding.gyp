@@ -3,8 +3,7 @@
 		{
 			"target_name": "rsvg",
 			"sources": [
-				"src/rsvg.cc",
-				"src/RsvgHandleJS.cc"
+				"src/Rsvg.cc"
 			],
 			"variables": {
 				"packages": "librsvg-2.0 cairo-png cairo-pdf cairo-svg"

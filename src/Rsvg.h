@@ -1,16 +1,16 @@
-#ifndef __RSVGHANDLEJS_H__
-#define __RSVGHANDLEJS_H__
+#ifndef __RSVG_H__
+#define __RSVG_H__
 
 #include <node.h>
 #include <librsvg/rsvg.h>
 
-class RsvgHandleJS : public node::ObjectWrap {
+class Rsvg : public node::ObjectWrap {
 public:
 	static void Init(v8::Handle<v8::Object> exports);
 
 private:
-	explicit RsvgHandleJS(RsvgHandle* const handle);
-	~RsvgHandleJS();
+	explicit Rsvg(RsvgHandle* const handle);
+	~Rsvg();
 
 	static v8::Handle<v8::Value> New(const v8::Arguments& args);
 	static v8::Handle<v8::Value> GetBaseURI(const v8::Arguments& args);
@@ -38,4 +38,4 @@ private:
 	RsvgHandle* const _handle;
 };
 
-#endif /*__RSVGHANDLEJS_H__*/
+#endif /*__RSVG_H__*/
