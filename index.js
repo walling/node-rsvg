@@ -121,6 +121,10 @@ Rsvg.prototype.render = function(width, height, format, id) {
 	return this.handle.render(width, height, format, id);
 };
 
+Rsvg.prototype.renderRaw = function(width, height, id) {
+	return this.render(width, height, 'RAW', id);
+};
+
 Rsvg.prototype.renderPNG = function(width, height, id) {
 	return this.render(width, height, 'PNG', id);
 };

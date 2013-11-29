@@ -2,6 +2,8 @@
 #include "RsvgHandleJS.h"
 #include <node_buffer.h>
 #include <cairo-pdf.h>
+#include <cairo-svg.h>
+#include <string>
 #include <cmath>
 
 using namespace v8;
@@ -36,6 +38,19 @@ static render_format_t RenderFormatFromString(const char* formatString) {
 	}
 }
 
+static Handle<Value> RenderFormatToString(render_format_t format) {
+	const char* formatString =
+		format == RENDER_FORMAT_RAW ? "RAW" :
+		format == RENDER_FORMAT_PNG ? "PNG" :
+		format == RENDER_FORMAT_JPEG ? "JPEG" :
+		format == RENDER_FORMAT_PDF ? "PDF" :
+		format == RENDER_FORMAT_SVG ? "SVG" :
+		format == RENDER_FORMAT_VIPS ? "VIPS" :
+		NULL;
+
+	return formatString ? String::New(formatString) : Null();
+}
+
 static cairo_format_t CairoFormatFromString(const char* formatString) {
 	if (!formatString) {
 		return CAIRO_FORMAT_INVALID;
@@ -67,6 +82,12 @@ static Handle<Value> CairoFormatToString(cairo_format_t format) {
 		NULL;
 
 	return formatString ? String::New(formatString) : Null();
+}
+
+cairo_status_t GetDataChunks(void* closure, const unsigned char* chunk, unsigned int length) {
+	std::string* data = reinterpret_cast<std::string*>(closure);
+	data->append(reinterpret_cast<const char *>(chunk), length);
+	return CAIRO_STATUS_SUCCESS;
 }
 
 Persistent<Function> RsvgHandleJS::constructor;
@@ -166,7 +187,6 @@ Handle<Value> RsvgHandleJS::GetDPI(const Arguments& args) {
 	);
 
 	Handle<ObjectTemplate> dpi = ObjectTemplate::New();
-	dpi->SetInternalFieldCount(2);
 	dpi->Set("x", Number::New(dpiX));
 	dpi->Set("y", Number::New(dpiY));
 
@@ -278,9 +298,7 @@ Handle<Value> RsvgHandleJS::Dimensions(const Arguments& args) {
 	gboolean hasDimensions = rsvg_handle_get_dimensions_sub(obj->_handle, &_dimensions, id);
 
 	if (hasPosition || hasDimensions) {
-		int fields = (hasPosition ? 2 : 0) + (hasDimensions ? 2 : 0);
 		Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
-		dimensions->SetInternalFieldCount(fields);
 		if (hasPosition) {
 			dimensions->Set("x", Integer::New(_position.x));
 			dimensions->Set("y", Integer::New(_position.y));
@@ -332,26 +350,24 @@ Handle<Value> RsvgHandleJS::Render(const Arguments& args) {
 	String::Utf8Value formatArg(args[2]);
 	const char* formatString = *formatArg;
 	render_format_t renderFormat = RenderFormatFromString(formatString);
-	cairo_format_t rawFormat = CAIRO_FORMAT_INVALID;
+	cairo_format_t pixelFormat = CAIRO_FORMAT_INVALID;
 	if (renderFormat == RENDER_FORMAT_RAW ||
 			renderFormat == RENDER_FORMAT_PNG) {
-		rawFormat = CAIRO_FORMAT_ARGB32;
+		pixelFormat = CAIRO_FORMAT_ARGB32;
 	} else if (renderFormat == RENDER_FORMAT_JPEG) {
-		ThrowException(Exception::Error(String::New("Format new yet supported: JPEG")));
+		ThrowException(Exception::Error(String::New("Format not supported: JPEG")));
 		return scope.Close(Undefined());
-	} else if (renderFormat == RENDER_FORMAT_PDF) {
-		ThrowException(Exception::Error(String::New("Format new yet supported: PDF")));
-		return scope.Close(Undefined());
-	} else if (renderFormat == RENDER_FORMAT_SVG) {
-		ThrowException(Exception::Error(String::New("Format new yet supported: SVG")));
-		return scope.Close(Undefined());
+	} else if (
+			renderFormat == RENDER_FORMAT_SVG ||
+			renderFormat == RENDER_FORMAT_PDF) {
+		pixelFormat = CAIRO_FORMAT_INVALID;
 	} else if (renderFormat == RENDER_FORMAT_VIPS) {
-		ThrowException(Exception::Error(String::New("Format new yet supported: VIPS")));
+		ThrowException(Exception::Error(String::New("Format not supported: VIPS")));
 		return scope.Close(Undefined());
-	} else if (renderFormat == RENDER_FORMAT_INVALID) {
+	} else {
 		renderFormat = RENDER_FORMAT_RAW;
-		rawFormat = CairoFormatFromString(formatString);
-		if (rawFormat == CAIRO_FORMAT_INVALID) {
+		pixelFormat = CairoFormatFromString(formatString);
+		if (pixelFormat == CAIRO_FORMAT_INVALID) {
 			ThrowException(Exception::RangeError(String::New("Invalid argument: format")));
 			return scope.Close(Undefined());
 		}
@@ -396,7 +412,19 @@ Handle<Value> RsvgHandleJS::Render(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	cairo_surface_t* surface = cairo_image_surface_create(rawFormat, width, height);
+	std::string data;
+	cairo_surface_t* surface;
+
+	if (renderFormat == RENDER_FORMAT_SVG) {
+		surface = cairo_svg_surface_create_for_stream(GetDataChunks, &data, width, height);
+		cairo_svg_surface_restrict_to_version(surface, CAIRO_SVG_VERSION_1_1);
+	} else if (renderFormat == RENDER_FORMAT_PDF) {
+		surface = cairo_pdf_surface_create_for_stream(GetDataChunks, &data, width, height);
+		cairo_pdf_surface_restrict_to_version(surface, CAIRO_PDF_VERSION_1_4);
+	} else {
+		surface = cairo_image_surface_create(pixelFormat, width, height);
+	}
+
 	cairo_t* cr = cairo_create(surface);
 	// printf(
 	// 	"%s: (%d, %d) %dx%d, render: %dx%d\n",
@@ -430,34 +458,56 @@ Handle<Value> RsvgHandleJS::Render(const Arguments& args) {
 
 	cairo_status_t status = cairo_status(cr);
 	if (status || !success) {
+		cairo_destroy(cr);
+		cairo_surface_destroy(surface);
+
 		ThrowException(Exception::Error(String::New(
 			status ? cairo_status_to_string(status) : "Failed to render image."
 		)));
-		cairo_destroy(cr);
-		cairo_surface_destroy(surface);
 		return scope.Close(Undefined());
 	}
 
 	cairo_surface_flush(surface);
-	cairo_surface_write_to_png(surface, "test.png");
 
-	char* data = reinterpret_cast<char*>(cairo_image_surface_get_data(surface));
-	rawFormat = cairo_image_surface_get_format(surface);
-	width = cairo_image_surface_get_width(surface);
-	height = cairo_image_surface_get_width(surface);
-	int stride = cairo_image_surface_get_stride(surface);
-	size_t length = stride * height;
+	int stride = -1;
+	if (renderFormat == RENDER_FORMAT_RAW) {
+		stride = cairo_image_surface_get_stride(surface);
+		data.append(
+			reinterpret_cast<char*>(cairo_image_surface_get_data(surface)),
+			stride * height
+		);
+	} else if (renderFormat == RENDER_FORMAT_PNG) {
+		cairo_surface_write_to_png_stream(surface, GetDataChunks, &data);
+	}
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
+	if (renderFormat == RENDER_FORMAT_RAW &&
+			pixelFormat == CAIRO_FORMAT_ARGB32 &&
+			stride != width * 4) {
+		ThrowException(Exception::Error(String::New(
+			"Rendered with invalid stride (byte size of row) for ARGB32 format."
+		)));
+		return scope.Close(Undefined());
+	}
+
 	Handle<ObjectTemplate> image = ObjectTemplate::New();
-	image->SetInternalFieldCount(5);
-	image->Set("data", node::Buffer::New(data, length)->handle_);
-	image->Set("format", CairoFormatToString(rawFormat));
+	if (renderFormat == RENDER_FORMAT_SVG) {
+		image->Set("data", String::New(data.c_str()));
+	} else {
+		image->Set("data", node::Buffer::New(data.c_str(), data.length())->handle_);
+	}
+
+	image->Set("format", RenderFormatToString(renderFormat));
+	if (pixelFormat != CAIRO_FORMAT_INVALID) {
+		image->Set("pixelFormat", CairoFormatToString(pixelFormat));
+	}
 	image->Set("width", Integer::New(width));
 	image->Set("height", Integer::New(height));
-	image->Set("stride", Integer::New(stride));
+	if (stride != -1) {
+		image->Set("stride", Integer::New(stride));
+	}
 	return scope.Close(image->NewInstance());
 }
 
