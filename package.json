@@ -1,6 +1,7 @@
 {
 	"name": "rsvg",
-	"version": "0.1.1",
+	"version": "0.1.2",
+	"description": "Parse SVG files and render them as PNG, PDF, SVG, or raw memory buffer images.",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/walling/node-rsvg.git"
