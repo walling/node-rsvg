@@ -6,19 +6,34 @@
 				"src/Rsvg.cc"
 			],
 			"variables": {
-				"packages": "librsvg-2.0 cairo-png cairo-pdf cairo-svg"
+				"packages": "librsvg-2.0 cairo-png cairo-pdf cairo-svg",
+				"libraries": "<!(pkg-config --libs-only-l <(packages))",
+				"ldflags": "<!(pkg-config --libs-only-L --libs-only-other <(packages))",
+				"cflags": "<!(pkg-config --cflags <(packages))"
 			},
 			"libraries": [
-				"<!@(pkg-config --libs-only-l <(packages))"
+				"<@(libraries)"
 			],
-			"xcode_settings": {
-				"OTHER_CFLAGS": [
-					"<!@(pkg-config --cflags-only-I <(packages))"
-				],
-				"OTHER_LDFLAGS": [
-					"<!@(pkg-config --libs-only-L --libs-only-other <(packages))"
-				]
-			}
+			"conditions": [
+				[ "OS=='linux'", {
+					"cflags": [
+						"<@(cflags)"
+					],
+					"ldflags": [
+						"<@(ldflags)"
+					]
+				} ],
+				[ "OS=='mac'", {
+					"xcode_settings": {
+						"OTHER_CFLAGS": [
+							"<@(cflags)"
+						],
+						"OTHER_LDFLAGS": [
+							"<@(ldflags)"
+						]
+					}
+				} ]
+			]
 		}
 	]
 }
