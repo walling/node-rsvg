@@ -9,6 +9,29 @@
  *  Raw memory buffer image
 
 
+## Basic Usage
+
+Here is a simple example. Look in `index.js` for more documentation.
+
+```javascript
+var Rsvg = require('rsvg').Rsvg;
+var fs = require('fs');
+
+// Create SVG render instance.
+var svg = new Rsvg();
+
+// When finishing reading SVG, render and save as PNG image.
+svg.on('finish', function() {
+  console.log('SVG width: ' + svg.width);
+  console.log('SVG height: ' + svg.height);
+  fs.writeFile('tiger.png', svg.renderPNG(600, 400).data);
+});
+
+// Stream SVG file into render instance.
+fs.createReadStream('tiger.svg').pipe(svg);
+```
+
+
 ## Installation
 
 First install the LibRSVG library and header files. Usually you have to look for a *development* package version. You must also have a functioning build tool chain including `pkg-config`. You can find instructions for different operating systems below. After that, you simply run:
