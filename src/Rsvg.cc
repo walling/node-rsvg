@@ -3,8 +3,20 @@
 #include <node_buffer.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+#include <cstring>
 #include <string>
 #include <cmath>
+
+// Hack to ignore warning message. It's deprecated to include the rsvg-cairo.h
+// file directly, but we need to do this in order to support older versions.
+#define __RSVG_RSVG_H_INSIDE__
+#include <librsvg/rsvg-cairo.h>
+#undef __RSVG_RSVG_H_INSIDE__
+
+// Support for old Cairo 1.8.8.
+#ifndef CAIRO_FORMAT_INVALID
+#define CAIRO_FORMAT_INVALID ((cairo_format_t) -1)
+#endif
 
 using namespace v8;
 
@@ -21,17 +33,17 @@ typedef enum {
 static render_format_t RenderFormatFromString(const char* formatString) {
 	if (!formatString) {
 		return RENDER_FORMAT_INVALID;
-	} else if (strcmp(formatString, "RAW") == 0) {
+	} else if (std::strcmp(formatString, "RAW") == 0) {
 		return RENDER_FORMAT_RAW;
-	} else if (strcmp(formatString, "PNG") == 0) {
+	} else if (std::strcmp(formatString, "PNG") == 0) {
 		return RENDER_FORMAT_PNG;
-	} else if (strcmp(formatString, "JPEG") == 0) {
+	} else if (std::strcmp(formatString, "JPEG") == 0) {
 		return RENDER_FORMAT_JPEG;
-	} else if (strcmp(formatString, "PDF") == 0) {
+	} else if (std::strcmp(formatString, "PDF") == 0) {
 		return RENDER_FORMAT_PDF;
-	} else if (strcmp(formatString, "SVG") == 0) {
+	} else if (std::strcmp(formatString, "SVG") == 0) {
 		return RENDER_FORMAT_SVG;
-	} else if (strcmp(formatString, "VIPS") == 0) {
+	} else if (std::strcmp(formatString, "VIPS") == 0) {
 		return RENDER_FORMAT_VIPS;
 	} else {
 		return RENDER_FORMAT_INVALID;
@@ -54,18 +66,20 @@ static Handle<Value> RenderFormatToString(render_format_t format) {
 static cairo_format_t CairoFormatFromString(const char* formatString) {
 	if (!formatString) {
 		return CAIRO_FORMAT_INVALID;
-	} else if (strcmp(formatString, "ARGB32") == 0) {
+	} else if (std::strcmp(formatString, "ARGB32") == 0) {
 		return CAIRO_FORMAT_ARGB32;
-	} else if (strcmp(formatString, "RGB24") == 0) {
+	} else if (std::strcmp(formatString, "RGB24") == 0) {
 		return CAIRO_FORMAT_RGB24;
-	} else if (strcmp(formatString, "A8") == 0) {
+	} else if (std::strcmp(formatString, "A8") == 0) {
 		return CAIRO_FORMAT_A8;
-	} else if (strcmp(formatString, "A1") == 0) {
+	} else if (std::strcmp(formatString, "A1") == 0) {
 		return CAIRO_FORMAT_A1;
-	} else if (strcmp(formatString, "RGB16_565") == 0) {
-		return CAIRO_FORMAT_RGB16_565;
-	} else if (strcmp(formatString, "RGB30") == 0) {
+	} else if (std::strcmp(formatString, "RGB16_565") == 0) {
+		return (cairo_format_t) CAIRO_FORMAT_RGB16_565;
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 12, 0)
+	} else if (std::strcmp(formatString, "RGB30") == 0) {
 		return CAIRO_FORMAT_RGB30;
+#endif
 	} else {
 		return CAIRO_FORMAT_INVALID;
 	}
@@ -78,7 +92,9 @@ static Handle<Value> CairoFormatToString(cairo_format_t format) {
 		format == CAIRO_FORMAT_A8 ? "A8" :
 		format == CAIRO_FORMAT_A1 ? "A1" :
 		format == CAIRO_FORMAT_RGB16_565 ? "RGB16_565" :
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 12, 0)
 		format == CAIRO_FORMAT_RGB30 ? "RGB30" :
+#endif
 		NULL;
 
 	return formatString ? String::New(formatString) : Null();
@@ -99,6 +115,12 @@ Rsvg::~Rsvg() {
 }
 
 void Rsvg::Init(Handle<Object> exports) {
+
+#if !GLIB_CHECK_VERSION(2, 36, 0)
+	// Initialize GObject types.
+	g_type_init();
+#endif
+
 	// Prepare constructor template.
 	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
 	tpl->SetClassName(String::NewSymbol("RsvgHandle"));
@@ -420,7 +442,9 @@ Handle<Value> Rsvg::Render(const Arguments& args) {
 		cairo_svg_surface_restrict_to_version(surface, CAIRO_SVG_VERSION_1_1);
 	} else if (renderFormat == RENDER_FORMAT_PDF) {
 		surface = cairo_pdf_surface_create_for_stream(GetDataChunks, &data, width, height);
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0)
 		cairo_pdf_surface_restrict_to_version(surface, CAIRO_PDF_VERSION_1_4);
+#endif
 	} else {
 		surface = cairo_image_surface_create(pixelFormat, width, height);
 	}
