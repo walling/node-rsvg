@@ -1,6 +1,6 @@
 {
 	"name": "rsvg",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "Parse SVG files and render them as PNG, PDF, SVG, or raw memory buffer images.",
 	"keywords": [
 		"svg", "render", "renders", "rendering", "graphic",
