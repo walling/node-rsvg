@@ -123,7 +123,7 @@ void Rsvg::Init(Handle<Object> exports) {
 
 	// Prepare constructor template.
 	Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-	tpl->SetClassName(String::NewSymbol("RsvgHandle"));
+	tpl->SetClassName(String::NewSymbol("Rsvg"));
 	tpl->InstanceTemplate()->SetInternalFieldCount(1);
 	// Add methods to prototype.
 	Local<ObjectTemplate> prototype = tpl->PrototypeTemplate();
