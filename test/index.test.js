@@ -110,12 +110,77 @@ describe('Rsvg', function() {
 	});
 
 	describe('dimensions()', function() {
-		it('gives the size of the whole image');
-		it('gives the size and position of specific elements');
+		it('gives the size of the whole image', function() {
+			new Rsvg('<svg width="314" height="257"/>').dimensions().should.deep.equal({
+				x: 0,
+				y: 0,
+				width: 314,
+				height: 257
+			});
+			new Rsvg('<svg width="17" height="19"/>').dimensions().should.deep.equal({
+				x: 0,
+				y: 0,
+				width: 17,
+				height: 19
+			});
+		});
+
+		it('gives the size and position of specific elements', function() {
+			var svg = new Rsvg();
+			svg.write('<svg width="12" height="10">');
+			svg.write('<rect x="-2" y="3" width="7" height="5" id="r1"/>');
+			svg.write('<rect x="8" y="4" width="4" height="6" id="r2"/>');
+			svg.write('<circle cx="8" cy="3" r="3" id="circ"/>');
+			svg.write('</svg>');
+			svg.end();
+
+			svg.dimensions().should.deep.equal({
+				x: 0,
+				y: 0,
+				width: 12,
+				height: 10
+			});
+			svg.dimensions(null).should.deep.equal(svg.dimensions());
+
+			svg.dimensions('#r1').should.deep.equal({
+				x: -2,
+				y: 3,
+				width: 7,
+				height: 5
+			});
+			svg.dimensions('#r2').should.deep.equal({
+				x: 8,
+				y: 4,
+				width: 4,
+				height: 6
+			});
+			svg.dimensions('#circ').should.deep.equal({
+				x: 5,
+				y: 0,
+				width: 6,
+				height: 6
+			});
+		});
 	});
 
 	describe('hasElement()', function() {
-		it('determines whether an element with the given ID exists');
+		it('determines whether an element with the given ID exists', function() {
+			var svg = new Rsvg();
+			svg.write('<svg width="12" height="10">');
+			svg.write('<rect x="-2" y="3" width="7" height="5" id="r1"/>');
+			svg.write('<rect x="8" y="4" width="4" height="6" id="r2"/>');
+			svg.write('<circle cx="8" cy="3" r="3" id="circ"/>');
+			svg.write('</svg>');
+			svg.end();
+
+			svg.hasElement().should.be.false;
+			svg.hasElement(null).should.be.false;
+			svg.hasElement('#r1').should.be.true;
+			svg.hasElement('#r2').should.be.true;
+			svg.hasElement('#circ').should.be.true;
+			svg.hasElement('#foo').should.be.false;
+			svg.hasElement('r1').should.be.false;
+		});
 	});
 
 	describe('autocrop()', function() {
