@@ -9,6 +9,7 @@
 #include <cmath>
 
 using namespace v8;
+using namespace node;
 
 cairo_status_t GetDataChunks(void* closure, const unsigned char* chunk, unsigned int length) {
 	std::string* data = reinterpret_cast<std::string*>(closure);
@@ -64,10 +65,10 @@ Handle<Value> Rsvg::New(const Arguments& args) {
 	if (args.IsConstructCall()) {
 		// Invoked as constructor: `new Rsvg(...)`
 		RsvgHandle* handle;
-		if (node::Buffer::HasInstance(args[0])) {
+		if (Buffer::HasInstance(args[0])) {
 			const guint8* buffer =
-				reinterpret_cast<guint8*>(node::Buffer::Data(args[0]));
-			gsize length = node::Buffer::Length(args[0]);
+				reinterpret_cast<guint8*>(Buffer::Data(args[0]));
+			gsize length = Buffer::Length(args[0]);
 
 			GError* error = NULL;
 			handle = rsvg_handle_new_from_data(buffer, length, &error);
@@ -109,7 +110,7 @@ Handle<Value> Rsvg::SetBaseURI(const Arguments& args) {
 
 Handle<Value> Rsvg::GetDPI(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble dpiX = 0;
 	gdouble dpiY = 0;
 	g_object_get(
@@ -128,7 +129,7 @@ Handle<Value> Rsvg::GetDPI(const Arguments& args) {
 
 Handle<Value> Rsvg::SetDPI(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	gdouble x = args[0]->NumberValue();
 	if (std::isnan(x)) {
@@ -173,11 +174,11 @@ Handle<Value> Rsvg::GetHeight(const Arguments& args) {
 
 Handle<Value> Rsvg::Write(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
-	if (node::Buffer::HasInstance(args[0])) {
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
+	if (Buffer::HasInstance(args[0])) {
 		const guchar* buffer =
-			reinterpret_cast<guchar*>(node::Buffer::Data(args[0]));
-		gsize length = node::Buffer::Length(args[0]);
+			reinterpret_cast<guchar*>(Buffer::Data(args[0]));
+		gsize length = Buffer::Length(args[0]);
 
 		GError* error = NULL;
 		gboolean success = rsvg_handle_write(obj->_handle, buffer, length, &error);
@@ -196,7 +197,7 @@ Handle<Value> Rsvg::Write(const Arguments& args) {
 
 Handle<Value> Rsvg::Close(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	GError* error = NULL;
 	gboolean success = rsvg_handle_close(obj->_handle, &error);
@@ -212,7 +213,7 @@ Handle<Value> Rsvg::Close(const Arguments& args) {
 
 Handle<Value> Rsvg::Dimensions(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	const char* id = NULL;
 	String::Utf8Value idArg(args[0]);
@@ -248,7 +249,7 @@ Handle<Value> Rsvg::Dimensions(const Arguments& args) {
 
 Handle<Value> Rsvg::HasElement(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	const char* id = NULL;
 	String::Utf8Value idArg(args[0]);
@@ -266,7 +267,7 @@ Handle<Value> Rsvg::HasElement(const Arguments& args) {
 
 Handle<Value> Rsvg::Render(const Arguments& args) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 
 	int width = args[0]->Int32Value();
 	int height = args[1]->Int32Value();
@@ -430,7 +431,7 @@ Handle<Value> Rsvg::Render(const Arguments& args) {
 	if (renderFormat == RENDER_FORMAT_SVG) {
 		image->Set("data", String::New(data.c_str()));
 	} else {
-		image->Set("data", node::Buffer::New(data.c_str(), data.length())->handle_);
+		image->Set("data", Buffer::New(data.c_str(), data.length())->handle_);
 	}
 
 	image->Set("format", RenderFormatToString(renderFormat));
@@ -447,7 +448,7 @@ Handle<Value> Rsvg::Render(const Arguments& args) {
 
 Handle<Value> Rsvg::GetStringProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gchar* value = NULL;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	Handle<Value> result(value ? String::New(value) : Null());
@@ -459,7 +460,7 @@ Handle<Value> Rsvg::GetStringProperty(const Arguments& args, const char* propert
 
 Handle<Value> Rsvg::SetStringProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gchar* value = NULL;
 	String::Utf8Value arg0(args[0]);
 	if (!(args[0]->IsNull() || args[0]->IsUndefined())) {
@@ -471,7 +472,7 @@ Handle<Value> Rsvg::SetStringProperty(const Arguments& args, const char* propert
 
 Handle<Value> Rsvg::GetNumberProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble value = 0;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	return scope.Close(Number::New(value));
@@ -479,7 +480,7 @@ Handle<Value> Rsvg::GetNumberProperty(const Arguments& args, const char* propert
 
 Handle<Value> Rsvg::SetNumberProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gdouble value = args[0]->NumberValue();
 	if (std::isnan(value)) {
 		value = 0;
@@ -490,7 +491,7 @@ Handle<Value> Rsvg::SetNumberProperty(const Arguments& args, const char* propert
 
 Handle<Value> Rsvg::GetIntegerProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gint value = 0;
 	g_object_get(G_OBJECT(obj->_handle), property, &value, NULL);
 	return scope.Close(Integer::New(value));
@@ -498,7 +499,7 @@ Handle<Value> Rsvg::GetIntegerProperty(const Arguments& args, const char* proper
 
 Handle<Value> Rsvg::SetIntegerProperty(const Arguments& args, const char* property) {
 	HandleScope scope;
-	Rsvg* obj = node::ObjectWrap::Unwrap<Rsvg>(args.This());
+	Rsvg* obj = ObjectWrap::Unwrap<Rsvg>(args.This());
 	gint value = args[0]->Int32Value();
 	g_object_set(G_OBJECT(obj->_handle), property, value, NULL);
 	return scope.Close(Undefined());
