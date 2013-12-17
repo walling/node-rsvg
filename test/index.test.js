@@ -98,12 +98,14 @@ describe('Rsvg', function() {
 	describe('width', function() {
 		it('gives the horizontal size', function() {
 			new Rsvg('<svg width="314" height="1"/>').width.should.equal(314);
+			new Rsvg('<svg width="257" height="2"/>').width.should.equal(257);
 		});
 	});
 
 	describe('height', function() {
 		it('gives the vertical size', function() {
 			new Rsvg('<svg width="1" height="413"/>').height.should.equal(413);
+			new Rsvg('<svg width="2" height="752"/>').height.should.equal(752);
 		});
 	});
 
