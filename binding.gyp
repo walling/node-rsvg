@@ -3,7 +3,9 @@
 		{
 			"target_name": "rsvg",
 			"sources": [
-				"src/Rsvg.cc"
+				"src/Rsvg.cc",
+				"src/Enums.cc",
+				"src/Autocrop.cc"
 			],
 			"variables": {
 				"packages": "librsvg-2.0 cairo-png cairo-pdf cairo-svg",
