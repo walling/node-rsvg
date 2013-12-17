@@ -24,7 +24,11 @@ var svg = new Rsvg();
 svg.on('finish', function() {
   console.log('SVG width: ' + svg.width);
   console.log('SVG height: ' + svg.height);
-  fs.writeFile('tiger.png', svg.renderPNG(600, 400).data);
+  fs.writeFile('tiger.png', svg.render({
+    format: 'png',
+    width: 600,
+    height: 400
+  }).data);
 });
 
 // Stream SVG file into render instance.
