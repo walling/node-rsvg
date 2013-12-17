@@ -17,10 +17,6 @@ static inline uint32_t pixel(uint8_t* data, int stride, int x, int y) {
 	return *reinterpret_cast<uint32_t*>(data + stride * y + x * 4);
 }
 
-static inline double round3(double number) {
-	return round(number * 1000) * 0.001;
-}
-
 const uint32_t INVALID_COLOR = 0x00DEAD00;
 static uint32_t areaColor(uint8_t* data, int stride, int x0, int x1, int y0, int y1) {
 	uint32_t color = pixel(data, stride, x0, y0);
@@ -183,10 +179,10 @@ Handle<Value> Rsvg::Autocrop(const Arguments& args) {
 			AutocropRecursive(obj->_handle, &area, 3) &&
 			AutocropRecursive(obj->_handle, &area, 4)) {
 		Handle<ObjectTemplate> dimensions = ObjectTemplate::New();
-		dimensions->Set("x", Number::New(round3(area.left)));
-		dimensions->Set("y", Number::New(round3(area.top)));
-		dimensions->Set("width", Number::New(round3(area.right - area.left)));
-		dimensions->Set("height", Number::New(round3(area.bottom - area.top)));
+		dimensions->Set("x", Number::New(area.left));
+		dimensions->Set("y", Number::New(area.top));
+		dimensions->Set("width", Number::New(area.right - area.left));
+		dimensions->Set("height", Number::New(area.bottom - area.top));
 		return scope.Close(dimensions->NewInstance());
 	} else {
 		return scope.Close(Undefined());

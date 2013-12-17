@@ -229,7 +229,12 @@ Rsvg.prototype.hasElement = function(id) {
  * @returns {{width: number, height: number, x: number, y: number}}
  */
 Rsvg.prototype.autocrop = function() {
-	return this.handle.autocrop();
+	var area = this.handle.autocrop();
+	area.x = area.x.toFixed(3) * 1;
+	area.y = area.y.toFixed(3) * 1;
+	area.width = area.width.toFixed(3) * 1;
+	area.height = area.height.toFixed(3) * 1;
+	return area;
 };
 
 /**
