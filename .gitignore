@@ -1,2 +1,7 @@
 /build/
-/test/
+/test/experiments/
+/node_modules/
+npm-debug.log
+.npmrc
+*.DS_Store
+*._t_

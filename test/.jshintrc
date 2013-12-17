@@ -1,0 +1,37 @@
+{
+	"node" : true,
+
+	"curly"    : true,
+	"eqeqeq"   : true,
+	"immed"    : true,
+	"indent"   : 1,
+	"latedef"  : true,
+	"newcap"   : true,
+	"noarg"    : true,
+	"nonew"    : true,
+	"quotmark" : true,
+	"undef"    : true,
+	"unused"   : true,
+	"strict"   : true,
+	"trailing" : true,
+	"maxdepth" : 4,
+	"maxlen"   : 80,
+	"eqnull"   : true,
+
+	/* CHAI.JS ASSERTIONS */
+	"expr"     : true,
+
+	"globals" : {
+		/* MOCHA.JS */
+		"describe"   : false,
+		"it"         : false,
+		"before"     : false,
+		"beforeEach" : false,
+		"after"      : false,
+		"afterEach"  : false,
+		/* CHAI.JS */
+		"should"     : false,
+		/* RSVG CASES */
+		"rsvg"       : false
+	}
+}

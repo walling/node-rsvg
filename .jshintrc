@@ -1,0 +1,20 @@
+{
+	"node" : true,
+
+	"curly"    : true,
+	"eqeqeq"   : true,
+	"immed"    : true,
+	"indent"   : 1,
+	"latedef"  : true,
+	"newcap"   : true,
+	"noarg"    : true,
+	"nonew"    : true,
+	"quotmark" : true,
+	"undef"    : true,
+	"unused"   : true,
+	"strict"   : true,
+	"trailing" : true,
+	"maxdepth" : 4,
+	"maxlen"   : 100,
+	"eqnull"   : true
+}
