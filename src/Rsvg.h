@@ -27,6 +27,7 @@ private:
 	static v8::Handle<v8::Value> Close(const v8::Arguments& args);
 	static v8::Handle<v8::Value> Dimensions(const v8::Arguments& args);
 	static v8::Handle<v8::Value> HasElement(const v8::Arguments& args);
+	static v8::Handle<v8::Value> Autocrop(const v8::Arguments& args);
 	static v8::Handle<v8::Value> Render(const v8::Arguments& args);
 	static v8::Handle<v8::Value> GetStringProperty(const v8::Arguments& args, const char* property);
 	static v8::Handle<v8::Value> SetStringProperty(const v8::Arguments& args, const char* property);

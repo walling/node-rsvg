@@ -116,6 +116,10 @@ describe('Rsvg', function() {
 		it('determines whether an element with the given ID exists');
 	});
 
+	describe('autocrop()', function() {
+		it('finds the drawing area of the SVG');
+	});
+
 	describe('render()', function() {
 		it('does nothing for an empty SVG document');
 		it('renders as a raw memory buffer');

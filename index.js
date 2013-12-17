@@ -223,6 +223,16 @@ Rsvg.prototype.hasElement = function(id) {
 };
 
 /**
+ * Find the drawing area, ie. the smallest area that has image content in the
+ * SVG document.
+ *
+ * @returns {{width: number, height: number, x: number, y: number}}
+ */
+Rsvg.prototype.autocrop = function() {
+	return this.handle.autocrop();
+};
+
+/**
  * Base render method. Valid high-level formats are: png, pdf, svg, raw. You
  * can also specify the pixel structure of raw images: argb32 (default), rgb24,
  * a8, a1, rgb16_565, and rgb30 (only enabled for Cairo >= 1.12). You can read
