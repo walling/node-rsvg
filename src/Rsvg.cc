@@ -668,6 +668,7 @@ Handle<Value> Rsvg::Render(const Arguments& args) {
 	} else {
 		success = rsvg_handle_render_cairo(obj->_handle, cr);
 	}
+	cairo_surface_flush(surface);
 
 	cairo_status_t status = cairo_status(cr);
 	if (status || !success) {
@@ -679,8 +680,6 @@ Handle<Value> Rsvg::Render(const Arguments& args) {
 		)));
 		return scope.Close(Undefined());
 	}
-
-	cairo_surface_flush(surface);
 
 	int stride = -1;
 	if (renderFormat == RENDER_FORMAT_RAW) {
