@@ -8,6 +8,8 @@
  *  SVG
  *  Raw memory buffer image
 
+[![Build Status](https://travis-ci.org/walling/node-rsvg.png?branch=master)](https://travis-ci.org/walling/node-rsvg)
+
 
 ## Basic Usage
 
