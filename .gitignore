@@ -1,5 +1,5 @@
 /build/
-/test/experiments/
+/experiments/
 /node_modules/
 npm-debug.log
 .npmrc
