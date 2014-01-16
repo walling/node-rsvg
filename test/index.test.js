@@ -88,6 +88,15 @@ describe('Rsvg', function() {
 				/*jshint +W031 */
 			}
 			loadInvalidSVG.should.throw(/load failure/i);
+
+			// Regression test on 2014-01-16.
+			onerror = sinon.spy();
+			svg = new Rsvg();
+			svg.on('error', onerror);
+			svg.end('<svg width="100" height="100"></svg>invalid');
+			onerror.should.have.been.calledOnce;
+			onerror.lastCall.args.should.have.length(1);
+			onerror.lastCall.args[0].should.match(/write failure/);
 		});
 	});
 

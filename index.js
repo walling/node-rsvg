@@ -62,7 +62,10 @@ function Rsvg(buffer) {
 		try {
 			self.handle.close();
 		} catch (error) {
-			self.trigger('error', error);
+			if (error.message !== self.lastErrorMessage) {
+				self.lastErrorMessage = error.message;
+				self.emit('error', new Error('Rsvg close failure: ' + error.message));
+			}
 			return;
 		}
 
@@ -170,6 +173,7 @@ Rsvg.prototype._write = function(data, encoding, callback) {
 	try {
 		this.handle.write(data);
 	} catch (error) {
+		this.lastErrorMessage = error.message;
 		callback(new Error('Rsvg write failure: ' + error.message));
 		return;
 	}
