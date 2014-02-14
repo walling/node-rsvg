@@ -1,4 +1,3 @@
-
 # Node.JS Binding for LibRSVG
 
 **LibRSVG** is a SVG rendering library, which parses SVG files and renders them in various formats. The formats include:
@@ -68,6 +67,14 @@ sudo yum install librsvg2-devel
 ```bash
 brew install librsvg
 ```
+
+If, after installing LibRSVG through homebrew you are experiencing issues installing this module, try manually exporting the package config with this command:
+
+```bash
+export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
+```
+
+Then try reinstalling this module. For further information, [see this thread](https://github.com/Homebrew/homebrew/issues/14123).
 
 #### Windows:
 
