@@ -257,7 +257,7 @@ Rsvg.prototype.autocrop = function() {
  * @param {string} [options.format] - One of the formats listed above.
  * @param {number} [options.width] - Output image width, should be an integer.
  * @param {number} [options.height] - Output image height, should be an integer.
- * @param {string} [options.element] - Subelement to render.
+ * @param {string} [options.id] - Subelement to render.
  * @returns {{data: Buffer, format: string, width: number, height: number}}
  */
 Rsvg.prototype.render = function(options) {
